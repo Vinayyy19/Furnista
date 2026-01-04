@@ -14,7 +14,14 @@ const orderRoutes = require('./routes/order.routes');
 
 const app = express();
 
-connectDB();
+(async () => {
+  try {
+    await connectDB();
+  } catch (err) {
+    process.exit(1);
+  }
+})();
+
 
 app.use(cors());
 
