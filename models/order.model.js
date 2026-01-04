@@ -148,6 +148,5 @@ const orderSchema = new mongoose.Schema(
 );
 
 orderSchema.index({ createdAt: -1 });
-orderSchema.index({ currentStatus: 1 });
 
 module.exports = mongoose.model("Order", orderSchema);
