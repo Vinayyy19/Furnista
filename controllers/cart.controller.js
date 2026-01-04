@@ -2,9 +2,6 @@ const Cart = require("../models/cart.model");
 const Product = require("../models/Product.model");
 const Variant = require("../models/Varient.model");
 
-/* =========================
-   GET CART
-========================= */
 module.exports.getCart = async (req, res) => {
   try {
     let cart = await Cart.findOne({ user: req.user._id })
@@ -27,9 +24,6 @@ module.exports.getCart = async (req, res) => {
   }
 };
 
-/* =========================
-   ADD TO CART
-========================= */
 module.exports.addToCart = async (req, res) => {
   try {
     const { productId, variantId, quantity } = req.body;
@@ -86,9 +80,6 @@ module.exports.addToCart = async (req, res) => {
   }
 };
 
-/* =========================
-   UPDATE CART QUANTITY
-========================= */
 module.exports.updateCartQty = async (req, res) => {
   try {
     const { productId, variantId, quantity } = req.body;
@@ -129,9 +120,6 @@ module.exports.updateCartQty = async (req, res) => {
   }
 };
 
-/* =========================
-   REMOVE FROM CART
-========================= */
 module.exports.removeFromCart = async (req, res) => {
   try {
     const { productId, variantId } = req.params;

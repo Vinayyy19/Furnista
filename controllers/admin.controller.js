@@ -80,6 +80,7 @@ module.exports.AdminLogin = async (req, res) => {
       },
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       message: "Internal server error",
     });
@@ -126,6 +127,7 @@ module.exports.AdminRegister = async (req, res) => {
       admin,
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       message: "Internal server error",
     });
