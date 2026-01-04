@@ -9,30 +9,28 @@ const connectDB = require("./db/db");
 const userRoutes = require("./routes/user.routes");
 const productRoutes = require("./routes/product.routes");
 const adminRoutes = require("./routes/admin.routes");
-const cartRoutes = require("./routes/cart.routes");
-const orderRoutes = require("./routes/order.routes");
+const cartRoutes = require('./routes/cart.routes');
+const orderRoutes = require('./routes/order.routes');
 
 const app = express();
 
-async function init() {
-  await connectDB();
+connectDB();
 
-  app.use(cors());
-  app.use(express.json({ limit: "50mb" }));
-  app.use(express.urlencoded({ extended: true, limit: "50mb" }));
-  app.use(cookieParser());
+app.use(cors());
 
-  app.get("/", (req, res) => {
-    res.send("Hello");
-  });
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-  app.use("/users", userRoutes);
-  app.use("/product", productRoutes);
-  app.use("/admin", adminRoutes);
-  app.use("/cart", cartRoutes);
-  app.use("/orders", orderRoutes);
-}
+app.use(cookieParser());
 
-init();
+app.get("/", (req, res) => {
+  res.send("Hello");
+});
+
+app.use("/users", userRoutes);
+app.use("/product", productRoutes);
+app.use("/admin", adminRoutes);
+app.use("/cart",cartRoutes);
+app.use("/orders",orderRoutes);
 
 module.exports = app;
