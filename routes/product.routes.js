@@ -5,8 +5,7 @@ const productController = require('../controllers/product.controller');
 
 router.post('/addCategory',upload.single("image"),productController.addCategory);
 
-router.post(
-  "/addProduct",
+router.post("/addProduct",
   upload.array("images", 6),
   productController.addProduct
 );

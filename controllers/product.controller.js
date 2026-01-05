@@ -27,7 +27,7 @@ module.exports.addProduct = async (req, res) => {
 
     const images = [];
     for (let i = 0; i < req.files.length; i++) {
-      const uploaded = await uploadToCloudinary(req.files[i].path);
+      const uploaded = await uploadToCloudinary(req.files[i].buffer);
       images.push({
         url: uploaded.url,
         publicId: uploaded.publicId,
@@ -49,6 +49,7 @@ module.exports.addProduct = async (req, res) => {
       product,
     });
   } catch (err) {
+    console.log(err);
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -57,31 +58,39 @@ module.exports.addCategory = async (req, res) => {
   try {
     const { name } = req.body;
 
-    if (!name)
-      return res.status(400).json({ message: "Category name required" });
+    if (!name) {
+      return res.status(400).json({ message: "Category name is required" });
+    }
 
-    if (!req.file)
-      return res.status(400).json({ message: "Category image required" });
+    if (!req.file || !req.file.buffer) {
+      return res.status(400).json({ message: "Category image is required" });
+    }
 
-    const uploaded = await uploadToCloudinary(req.file.path, "categories");
+    // ✅ THIS IS THE FIX
+    const imageUpload = await uploadToCloudinary(
+      req.file.buffer,
+      "categories"
+    );
 
     const category = await CategoryModel.create({
       name,
-      imageUrl: uploaded.url,
-      imagePublicId: uploaded.publicId,
+      imageUrl: imageUpload.url,
+      imagePublicId: imageUpload.publicId,
     });
 
     res.status(201).json({
-      message: "Category created successfully",
+      success: true,
       category,
     });
-  } catch (err) {
-    if (err.code === 11000) {
-      return res.status(409).json({ message: "Category already exists" });
-    }
-    res.status(500).json({ message: "Server Error" });
+  } catch (error) {
+    console.error("Add category error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
+
 
 module.exports.addVarient = async (req, res) => {
   try {

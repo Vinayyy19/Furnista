@@ -1,5 +1,4 @@
 const cloudinary = require("cloudinary").v2;
-const fs = require("fs/promises");
 
 cloudinary.config({
   cloud_name: process.env.Cloudinary_CloudName,
@@ -7,25 +6,27 @@ cloudinary.config({
   api_secret: process.env.Cloudinary_APISecret,
 });
 
-const uploadToCloudinary = async (localFilePath, folder = "products") => {
-  if (!localFilePath) throw new Error("File path missing");
+const uploadToCloudinary = (buffer, folder = "products") => {
+  if (!buffer) throw new Error("File buffer missing");
 
-  try {
-    const result = await cloudinary.uploader.upload(localFilePath, {
-      folder,
-      resource_type: "image",
-    });
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder,
+        resource_type: "image",
+      },
+      (error, result) => {
+        if (error) return reject(error);
 
-    await fs.unlink(localFilePath);
+        resolve({
+          url: result.secure_url,
+          publicId: result.public_id,
+        });
+      }
+    );
 
-    return {
-      url: result.secure_url,
-      publicId: result.public_id,
-    };
-  } catch (err) {
-    try { await fs.unlink(localFilePath); } catch {}
-    throw err;
-  }
+    stream.end(buffer);
+  });
 };
 
 module.exports = uploadToCloudinary;
