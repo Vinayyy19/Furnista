@@ -42,7 +42,6 @@ const variantSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-variantSchema.index({ productId: 1 });
-variantSchema.index({ color: 1, size: 1 });
+variantSchema.index({ productId: 1, sellingPrice: 1 });
 
 module.exports = mongoose.model("Variant", variantSchema);

@@ -58,7 +58,7 @@ const productSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-productSchema.index({ categoryId: 1 });
 productSchema.index({ name: "text", description: "text" });
+
 
 module.exports = mongoose.model("Product", productSchema);

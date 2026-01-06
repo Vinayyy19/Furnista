@@ -2,30 +2,23 @@ const userModel = require("../models/user.model");
 const Admin = require("../models/Admin.model");
 const jwt = require("jsonwebtoken");
 
-module.exports.authUser = async (req, res, next) => {
+module.exports.authUser = (req, res, next) => {
   try {
-    let token;
-    if (req.cookies?.token) {
-      token = req.cookies.token;
-    } else if (req.headers.authorization?.startsWith("bearer ") || req.headers.authorization?.startsWith("Bearer ")) {
-      token = req.headers.authorization.split(" ")[1];
-    }
-    if (!token) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
+    const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+
+    if (!token) return res.status(401).json({ message: "Authentication required" });
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await userModel.findById(decoded.id);
-    if (!user) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-    req.user = user;
-    req.token = token;
+    req.user = decoded;
     next();
-  } catch (error) {
-    console.error("Authentication error:", error);
-    return res.status(401).json({ message: "Unauthorized" });
+  } catch (err) {
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Session expired. Please login again." });
+    }
+    return res.status(401).json({ message: "Invalid token" });
   }
 };
+
 
 module.exports.authAdmin = async (req, res, next) => {
   try {

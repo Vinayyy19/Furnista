@@ -26,6 +26,8 @@ router.get("/category/:categoryId", productController.getProductsByCategory);
 
 router.get("/recommend/:productId", productController.recommendProducts);
 
+router.get("/search", productController.searchProducts);
+
 
 
 module.exports = router;
