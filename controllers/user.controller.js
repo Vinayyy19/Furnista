@@ -154,7 +154,6 @@ module.exports.updateUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    /* ---------- NAME ---------- */
     if (!user.name) {
       user.name = { firstName: "", lastName: "" };
     }
@@ -168,7 +167,6 @@ module.exports.updateUser = async (req, res) => {
       });
     }
 
-    /* ---------- PHONE ---------- */
     if (phoneNumber !== undefined) {
       const existingNumber = await userModel.findOne({
         phoneNumber,
@@ -184,7 +182,6 @@ module.exports.updateUser = async (req, res) => {
       user.phoneNumber = phoneNumber;
     }
 
-    /* ---------- ADDRESS ---------- */
     if (!user.address) user.address = {};
 
     if (street !== undefined) user.address.street = street;

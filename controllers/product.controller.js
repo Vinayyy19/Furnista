@@ -452,7 +452,7 @@ module.exports.searchProducts = async (req, res) => {
     const safeLimit = Math.min(parseInt(limit), 50);
     const skip = (safePage - 1) * safeLimit;
 
-    /* -------------------- Match Stage -------------------- */
+    
     const matchStage = {};
 
     if (q) {
@@ -463,7 +463,6 @@ module.exports.searchProducts = async (req, res) => {
       matchStage.material = material;
     }
 
-    /* -------------------- Price Filter -------------------- */
     const priceConditions = [];
     if (minPrice) {
       priceConditions.push({ $gte: ["$$v.sellingPrice", Number(minPrice)] });
@@ -472,7 +471,6 @@ module.exports.searchProducts = async (req, res) => {
       priceConditions.push({ $lte: ["$$v.sellingPrice", Number(maxPrice)] });
     }
 
-    /* -------------------- Sort Logic -------------------- */
     const sortStage =
       sort === "price_asc"
         ? { minVariantPrice: 1 }
@@ -482,7 +480,6 @@ module.exports.searchProducts = async (req, res) => {
         ? { score: { $meta: "textScore" } }
         : { createdAt: -1 };
 
-    /* -------------------- Aggregation Pipeline -------------------- */
     const basePipeline = [
       { $match: matchStage },
 
@@ -521,7 +518,6 @@ module.exports.searchProducts = async (req, res) => {
       ...(q ? [{ $addFields: { score: { $meta: "textScore" } } }] : []),
     ];
 
-    /* -------------------- Execute Queries -------------------- */
     const [countResult, products] = await Promise.all([
       productModel.aggregate([...basePipeline, { $count: "total" }]),
 

@@ -241,9 +241,6 @@ module.exports.dashBoard = async (req, res) => {
       1
     );
 
-    /* ===========================
-       ORDER STATS
-    ============================ */
 
     const [
       todayOrders,
@@ -257,18 +254,10 @@ module.exports.dashBoard = async (req, res) => {
       Order.countDocuments({ currentStatus: { $ne: "DELIVERED" } }),
     ]);
 
-    /* ===========================
-       USER STATS
-    ============================ */
-
     const [todayUsers, thisMonthUsers] = await Promise.all([
       User.countDocuments({ createdAt: { $gte: startOfToday } }),
       User.countDocuments({ createdAt: { $gte: startOfMonth } }),
     ]);
-
-    /* ===========================
-       ORDERS BY STATUS (CHART)
-    ============================ */
 
     const ordersByStatusRaw = await Order.aggregate([
       {
@@ -284,9 +273,6 @@ module.exports.dashBoard = async (req, res) => {
       count: item.count,
     }));
 
-    /* ===========================
-       MONTHLY COMPARISON
-    ============================ */
 
     const [thisMonth, lastMonth] = await Promise.all([
       Order.countDocuments({ createdAt: { $gte: startOfMonth } }),
@@ -294,10 +280,6 @@ module.exports.dashBoard = async (req, res) => {
         createdAt: { $gte: startOfLastMonth, $lt: startOfMonth },
       }),
     ]);
-
-    /* ===========================
-       TOP CATEGORIES
-    ============================ */
 
     const categoryStats = await Order.aggregate([
       { $unwind: "$items" },
@@ -342,10 +324,6 @@ module.exports.dashBoard = async (req, res) => {
       category: c._id,
       count: c.count,
     }));
-
-    /* ===========================
-       FINAL RESPONSE
-    ============================ */
 
     res.status(200).json({
       success: true,

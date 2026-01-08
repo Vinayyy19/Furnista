@@ -41,7 +41,6 @@ const adminSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-/* ---------- METHODS ---------- */
 
 adminSchema.methods.generateAuthToken = function () {
   return jwt.sign(
@@ -54,8 +53,6 @@ adminSchema.methods.generateAuthToken = function () {
 adminSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
-
-/* ---------- MIDDLEWARE ---------- */
 
 adminSchema.pre("save", async function () {
   if (!this.isModified("password")) return;

@@ -5,7 +5,6 @@ module.exports.mockPaymentSuccess = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    /* ---------- FETCH CART ---------- */
     const cart = await Cart.findOne({ user: userId })
       .populate("items.product")
       .populate("items.variant");
@@ -14,7 +13,6 @@ module.exports.mockPaymentSuccess = async (req, res) => {
       return res.status(400).json({ message: "Cart is empty" });
     }
 
-    /* ---------- BUILD ORDER ITEMS ---------- */
     const orderItems = cart.items.map((item) => {
       return {
         productId: item.product._id,
@@ -29,13 +27,11 @@ module.exports.mockPaymentSuccess = async (req, res) => {
       };
     });
 
-    /* ---------- PRICING ---------- */
     const itemsTotal = orderItems.reduce((sum, item) => sum + item.subtotal, 0);
 
     const shippingFee = itemsTotal > 0 ? 49 : 0;
     const finalAmount = itemsTotal + shippingFee;
 
-    /* ---------- CREATE ORDER ---------- */
     const order = await Order.create({
       userId,
       items: orderItems,
@@ -55,7 +51,6 @@ module.exports.mockPaymentSuccess = async (req, res) => {
       ],
     });
 
-    /* ---------- CLEAR CART ---------- */
     cart.items = [];
     await cart.save();
 
