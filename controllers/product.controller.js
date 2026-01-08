@@ -17,7 +17,6 @@ module.exports.addCategory = async (req, res) => {
       return res.status(400).json({ message: "Category image is required" });
     }
 
-    // ✅ THIS IS THE FIX
     const imageUpload = await uploadToCloudinary(
       req.file.buffer,
       "categories"
