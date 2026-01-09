@@ -27,4 +27,14 @@ router.patch(
   orderController.editStatus
 );
 
+router.post(
+  "/contact-us",
+  orderController.SaveContactMsg
+);
+
+router.post(
+  "/Bulk-order",
+  orderController.saveBulkOrder
+)
+
 module.exports = router;

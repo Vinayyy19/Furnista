@@ -5,6 +5,7 @@ const User = require("../models/user.model");
 const Variant = require("../models/Varient.model");
 const Product = require("../models/Product.model");
 const Category = require("../models/Category.model");
+const contactUsForm = require("../models/ContactUs.model");
 
 module.exports.getAdminProfile = async (req, res) => {
   try {
@@ -349,3 +350,42 @@ module.exports.dashBoard = async (req, res) => {
     });
   }
 };
+
+module.exports.getMsg = async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+  const { type } = req.query;
+
+  try {
+    const filter = {};
+    if (type) {
+      filter.type = type;
+    }
+
+    const messages = await contactUsForm
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await contactUsForm.countDocuments(filter);
+
+    return res.status(200).json({
+      message: "Messages fetched successfully",
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+      data: messages,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      message: "Failed to fetch messages",
+    });
+  }
+};
+

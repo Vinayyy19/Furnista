@@ -1,5 +1,6 @@
 const Cart = require("../models/cart.model");
 const Order = require("../models/order.model");
+const contactUsForm = require("../models/ContactUs.model");
 
 module.exports.mockPaymentSuccess = async (req, res) => {
   try {
@@ -152,3 +153,65 @@ module.exports.editStatus = async (req, res) => {
     });
   }
 };
+
+module.exports.SaveContactMsg = async (req, res) => {
+  const { name, mobile, category, description, pincode, email } = req.body;
+
+  if (!name || !mobile || !category || !description || !pincode || !email) {
+    return res.status(400).json({
+      message: "All fields are required",
+    });
+  }
+
+  try {
+    await contactUsForm.create({
+      name,
+      email,
+      mobile,
+      category,
+      description,
+      pincode,
+      type: "contactUs",
+    });
+
+    return res.status(201).json({
+      message: "Message sent successfully",
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      message: "Failed to send message. Please use phone or email to contact directly.",
+    });
+  }
+};
+
+module.exports.saveBulkOrder = async (req,res) => {
+  const {email,mobile,requirements,pincode,organisation,name} = req.body;
+
+  if (!name || !mobile || !organisation || !requirements || !pincode || !email) {
+    return res.status(400).json({
+      message: "All fields are required",
+    });
+  }
+
+  try {
+    await contactUsForm.create({
+      name,
+      email,
+      mobile,
+      pincode,
+      category : organisation,
+      description : requirements,
+      type: "bulkOrder",
+    });
+
+    return res.status(201).json({
+      message: "Message sent successfully",
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      message: "Failed to send message. Please use phone or email to contact directly.",
+    });
+  }
+}

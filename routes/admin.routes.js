@@ -47,4 +47,6 @@ router.delete('/deleteAdmin/:adminId',adminController.deleteAdmin);
 
 router.get('/dashboard',adminController.dashBoard);
 
+router.get("/messages",adminController.getMsg);
+
 module.exports = router;
