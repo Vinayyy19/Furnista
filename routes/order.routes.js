@@ -35,6 +35,10 @@ router.post(
 router.post(
   "/Bulk-order",
   orderController.saveBulkOrder
-)
+);
 
+router.delete(
+  "/delete/:id",
+  orderController.deleteorder
+)
 module.exports = router;

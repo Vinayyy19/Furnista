@@ -215,3 +215,22 @@ module.exports.saveBulkOrder = async (req,res) => {
     });
   }
 }
+
+module.exports.deleteorder = async (req,res) => {
+  try{
+    const {id} = req.params;
+    const deletedOrder = await Order.findByIdAndDelete(id);
+    if(!deletedOrder){
+      return res.status(404).json({
+        message:"Order not found",
+      });
+    }
+    return res.status(200).json({
+        message:"Order Deleted Successfully",
+      });
+  }catch(err){
+    res.status(500).json({
+      message:"Failed to delete Order",
+    });
+  }
+}

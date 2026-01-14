@@ -29,4 +29,13 @@ const uploadToCloudinary = (buffer, folder = "products") => {
   });
 };
 
-module.exports = uploadToCloudinary;
+const deleteFromCloudinary = async (publicId) => {
+  if (!publicId) return;
+
+  await cloudinary.uploader.destroy(publicId);
+};
+
+module.exports = {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+};

@@ -28,6 +28,8 @@ router.get("/recommend/:productId", productController.recommendProducts);
 
 router.get("/search", productController.searchProducts);
 
+router.delete("/delete/:id",productController.deleteProduct);
+
 
 
 module.exports = router;

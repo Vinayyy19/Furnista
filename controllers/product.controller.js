@@ -1,8 +1,11 @@
 const productModel = require("../models/Product.model");
 const CategoryModel = require("../models/Category.model");
 const variantModel = require("../models/Varient.model");
-const uploadToCloudinary = require("../services/CloudinaryUpload");
-const featureModel = require('../models/featuredProduct.model');
+const {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+} = require("../services/CloudinaryUpload");
+const featureModel = require("../models/featuredProduct.model");
 const mongoose = require("mongoose");
 
 module.exports.addCategory = async (req, res) => {
@@ -17,10 +20,7 @@ module.exports.addCategory = async (req, res) => {
       return res.status(400).json({ message: "Category image is required" });
     }
 
-    const imageUpload = await uploadToCloudinary(
-      req.file.buffer,
-      "categories"
-    );
+    const imageUpload = await uploadToCloudinary(req.file.buffer, "categories");
 
     const category = await CategoryModel.create({
       name,
@@ -42,31 +42,31 @@ module.exports.addCategory = async (req, res) => {
 };
 
 module.exports.getCategories = async (req, res) => {
-  try{
+  try {
     const categories = await CategoryModel.find({});
     return res.status(200).json({
-      success:true,
-      categories
+      success: true,
+      categories,
     });
-  }catch(err){
+  } catch (err) {
     return res.status(500).json({
-      success:false,
-      message:"Failed to fetch categories",
+      success: false,
+      message: "Failed to fetch categories",
     });
   }
 };
 
 module.exports.getAllProducts = async (req, res) => {
-  try{
-    const Product = await productModel.find({}).populate("categoryId", "name")
+  try {
+    const Product = await productModel.find({}).populate("categoryId", "name");
     return res.status(200).json({
-      success:true,
-      Product
+      success: true,
+      Product,
     });
-  }catch(err){
+  } catch (err) {
     return res.status(500).json({
-      success:false,
-      message:"Failed to fetch categories",
+      success: false,
+      message: "Failed to fetch categories",
     });
   }
 };
@@ -452,7 +452,6 @@ module.exports.searchProducts = async (req, res) => {
     const safeLimit = Math.min(parseInt(limit), 50);
     const skip = (safePage - 1) * safeLimit;
 
-    
     const matchStage = {};
 
     if (q) {
@@ -556,6 +555,50 @@ module.exports.searchProducts = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Server Error",
+    });
+  }
+};
+
+module.exports.deleteProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid product id",
+      });
+    }
+
+    const product = await productModel.findById(id);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    if (product.images?.length) {
+      await Promise.all(
+        product.images.map((img) => deleteFromCloudinary(img.publicId))
+      );
+    }
+
+    await variantModel.deleteMany({ productId: id });
+
+    await featureModel.deleteOne({ productId: id });
+
+    await productModel.findByIdAndDelete(id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Product deleted successfully",
+    });
+  } catch (err) {
+    console.error("Delete product error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete product",
     });
   }
 };
