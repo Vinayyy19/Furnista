@@ -300,7 +300,7 @@ module.exports.addProduct = async (req, res) => {
 
 module.exports.addVarient = async (req, res) => {
   try {
-    const { productId, color, size, sellingPrice, marketPrice, stockQty, sku } =
+    let { productId, color, size, sellingPrice, marketPrice, stockQty, sku } =
       req.body;
 
     if (
@@ -317,6 +317,10 @@ module.exports.addVarient = async (req, res) => {
     const productExists = await productModel.exists({ _id: productId });
     if (!productExists) {
       return res.status(404).json({ message: "Product not found" });
+    }
+
+    if (typeof sku === "string" && sku.trim() === "") {
+      sku = undefined;
     }
 
     const variant = await variantModel.create({
