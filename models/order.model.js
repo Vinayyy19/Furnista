@@ -108,13 +108,7 @@ const orderSchema = new mongoose.Schema(
 
     currentStatus: {
       type: String,
-      enum: [
-        "BOOKED",
-        "CONFIRMED",
-        "PACKED",
-        "SHIPPED",
-        "DELIVERED",
-      ],
+      enum: ["BOOKED", "CONFIRMED", "PACKED", "SHIPPED", "DELIVERED"],
       default: "BOOKED",
       index: true,
     },
@@ -122,6 +116,10 @@ const orderSchema = new mongoose.Schema(
     statusUpdatedAt: {
       type: Date,
       default: Date.now,
+    },
+    razorpay: {
+      paymentId: String,
+      orderId: String,
     },
 
     deliveryAddress: {

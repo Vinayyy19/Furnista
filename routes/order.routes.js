@@ -4,9 +4,15 @@ const orderController = require("../controllers/order.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
 
 router.post(
-  "/mock-payment-success",
+  "/create-order",
   authMiddleware.authUser,
-  orderController.mockPaymentSuccess
+  orderController.createOrder
+);
+
+router.post(
+  "/Verify-order",
+  authMiddleware.authUser,
+  orderController.verifyOrder
 );
 
 router.get(

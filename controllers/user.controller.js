@@ -106,8 +106,9 @@ module.exports.loginUser = async (req, res, next) => {
 
 module.exports.getUserProfile = async (req, res) => {
   try {
+    const user = await userModel.findById(req.user._id).select("-password");
     return res.status(200).json({
-      user: req.user,
+      user,
     });
   } catch (error) {
     return res.status(500).json({

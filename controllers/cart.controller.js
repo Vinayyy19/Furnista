@@ -28,7 +28,7 @@ module.exports.addToCart = async (req, res) => {
   try {
     const { productId, variantId, quantity } = req.body;
 
-    if (!productId || !variantId || !quantity) {
+    if (!productId || !variantId || !quantity || quantity < 1) {
       return res.status(400).json({ message: "Missing fields" });
     }
 
@@ -53,6 +53,14 @@ module.exports.addToCart = async (req, res) => {
         item.product.toString() === productId &&
         item.variant.toString() === variantId
     );
+
+    const finalQty = existingItem ? existingItem.quantity + quantity : quantity;
+
+    if (finalQty > variant.stockQty) {
+      return res.status(400).json({
+        message: `Only ${variant.stockQty} item(s) left in stock`,
+      });
+    }
 
     if (existingItem) {
       existingItem.quantity += quantity;
@@ -85,7 +93,18 @@ module.exports.updateCartQty = async (req, res) => {
     const { productId, variantId, quantity } = req.body;
 
     if (quantity < 1) {
-      return res.status(400).json({ message: "Quantity must be >= 1" });
+      return res.status(400).json({ message: "Quantity must be more than 1" });
+    }
+
+    const variant = await Variant.findById(variantId);
+    if (!variant) {
+      return res.status(404).json({ message: "Variant not found" });
+    }
+
+    if (quantity > variant.stockQty) {
+      return res.status(400).json({
+        message: `Only ${variant.stockQty} item(s) left in stock`,
+      });
     }
 
     const cart = await Cart.findOne({ user: req.user._id });
@@ -96,8 +115,7 @@ module.exports.updateCartQty = async (req, res) => {
 
     const item = cart.items.find(
       (i) =>
-        i.product.toString() === productId &&
-        i.variant.toString() === variantId
+        i.product.toString() === productId && i.variant.toString() === variantId
     );
 
     if (!item) {
