@@ -30,6 +30,10 @@ router.get("/search", productController.searchProducts);
 
 router.delete("/delete/:id",productController.deleteProduct);
 
+router.delete("/variant/:id",productController.deleteVarient);
+
+router.put("/variant-update/:id",productController.updateVariant);
+
 
 
 module.exports = router;

@@ -1,10 +1,12 @@
 const productModel = require("../models/Product.model");
 const CategoryModel = require("../models/Category.model");
 const variantModel = require("../models/Varient.model");
+
 const {
   uploadToCloudinary,
   deleteFromCloudinary,
 } = require("../services/CloudinaryUpload");
+
 const featureModel = require("../models/featuredProduct.model");
 const mongoose = require("mongoose");
 
@@ -603,6 +605,102 @@ module.exports.deleteProduct = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to delete product",
+    });
+  }
+};
+
+module.exports.deleteVarient = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid variant id",
+      });
+    }
+
+    const variant = await variantModel.findById(id);
+    if (!variant) {
+      return res.status(404).json({
+        success: false,
+        message: "Variant not found",
+      });
+    }
+
+    await variantModel.findByIdAndDelete(id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Variant deleted successfully",
+    });
+  } catch (err) {
+    console.error("Delete variant error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete variant",
+    });
+  }
+};
+
+module.exports.updateVariant = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      color,
+      size,
+      sellingPrice,
+      marketPrice,
+      stockQty,
+      sku,
+    } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid variant id",
+      });
+    }
+
+    const variant = await variantModel.findById(id);
+    if (!variant) {
+      return res.status(404).json({
+        success: false,
+        message: "Variant not found",
+      });
+    }
+
+    let finalSku = sku;
+    if (typeof sku === "string" && sku.trim() === "") {
+      finalSku = undefined;
+    }
+
+    if (color !== undefined) variant.color = color;
+    if (size !== undefined) variant.size = size;
+    if (sellingPrice !== undefined) variant.sellingPrice = sellingPrice;
+    if (marketPrice !== undefined) variant.marketPrice = marketPrice;
+    if (stockQty !== undefined) variant.stockQty = stockQty;
+    if (finalSku !== undefined) variant.sku = finalSku;
+    
+    await variant.save();
+
+    return res.status(200).json({
+      success: true,
+      variant,
+      message: "Variant updated successfully",
+    });
+  } catch (err) {
+    if (err.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: "SKU already exists",
+      });
+    }
+
+    console.error("Update variant error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update variant",
     });
   }
 };
