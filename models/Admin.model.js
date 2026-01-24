@@ -60,4 +60,5 @@ adminSchema.pre("save", async function () {
 });
 
 
+
 module.exports = mongoose.model("Admin", adminSchema);

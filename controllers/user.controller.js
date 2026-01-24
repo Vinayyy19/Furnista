@@ -1,6 +1,7 @@
 const userModel = require("../models/user.model");
 const userService = require("../services/user.service");
 const { validationResult } = require("express-validator");
+const isProd = process.env.NODE_ENV === "production";
 
 module.exports.registerUser = async (req, res) => {
   const errors = validationResult(req);
@@ -11,14 +12,6 @@ module.exports.registerUser = async (req, res) => {
   }
   try {
     const { name, email, password, phoneNumber } = req.body;
-    const existingemail = await userModel.findOne({ email });
-    if (existingemail) {
-      return res.status(409).json({ message: "Email already in use" });
-    }
-    const existingnumber = await userModel.findOne({ phoneNumber });
-    if (existingnumber) {
-      return res.status(409).json({ message: "Phone number already in use" });
-    }
 
     const hashedPassword = await userModel.hashPassword(password);
 
@@ -31,6 +24,13 @@ module.exports.registerUser = async (req, res) => {
 
     const token = user.generateAuthToken();
 
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
     res.status(201).json({
       message: "User registered successfully",
       user: {
@@ -39,7 +39,6 @@ module.exports.registerUser = async (req, res) => {
         email: user.email,
         phoneNumber: user.phoneNumber,
       },
-      token,
     });
   } catch (error) {
     if (error.name === "ValidationError") {
@@ -87,14 +86,19 @@ module.exports.loginUser = async (req, res, next) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      maxAge: 24 * 60 * 60 * 1000,
     });
 
     res.status(200).json({
       message: "Login successful",
-      user,
-      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+      },
     });
   } catch (error) {
     console.error("Login error:", error);
@@ -108,7 +112,7 @@ module.exports.getUserProfile = async (req, res) => {
   try {
     const user = await userModel.findById(req.user._id).select("-password");
     return res.status(200).json({
-      user,
+      user, // Don't send whole user 
     });
   } catch (error) {
     return res.status(500).json({
@@ -117,13 +121,12 @@ module.exports.getUserProfile = async (req, res) => {
   }
 };
 
-
 module.exports.logoutUser = async (req, res) => {
   try {
     res.clearCookie("token", {
       httpOnly: true,
-      sameSite: "strict",
-      secure: process.env.NODE_ENV === "production",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
     });
 
     res.status(200).json({
@@ -136,19 +139,12 @@ module.exports.logoutUser = async (req, res) => {
   }
 };
 
-
 module.exports.updateUser = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    const {
-      firstName,
-      lastName,
-      phoneNumber,
-      street,
-      city,
-      postalCode,
-    } = req.body;
+    const { firstName, lastName, phoneNumber, street, city, postalCode } =
+      req.body;
 
     const user = await userModel.findById(userId);
     if (!user) {
@@ -175,9 +171,7 @@ module.exports.updateUser = async (req, res) => {
       });
 
       if (existingNumber) {
-        return res
-          .status(409)
-          .json({ message: "Phone number already in use" });
+        return res.status(409).json({ message: "Phone number already in use" });
       }
 
       user.phoneNumber = phoneNumber;
@@ -187,8 +181,7 @@ module.exports.updateUser = async (req, res) => {
 
     if (street !== undefined) user.address.street = street;
     if (city !== undefined) user.address.city = city;
-    if (postalCode !== undefined)
-      user.address.postalCode = postalCode;
+    if (postalCode !== undefined) user.address.postalCode = postalCode;
 
     await user.save();
 

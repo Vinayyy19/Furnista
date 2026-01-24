@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { body } = require("express-validator");
 const adminController = require("../controllers/admin.controller");
+const {authAdmin} = require("../middlewares/auth.middleware");
 
 router.post("/login",
   [
@@ -16,7 +17,7 @@ router.post("/login",
   adminController.AdminLogin
 );
 
-router.post("/register",
+router.post("/register",authAdmin,
   [
     body("email")
       .isEmail()
@@ -41,12 +42,25 @@ router.post("/register",
   adminController.AdminRegister
 );
 
-router.get('/getAdmin',adminController.getAllAdmins);
+router.get('/getAdmin',authAdmin,adminController.getAllAdmins);
 
-router.delete('/deleteAdmin/:adminId',adminController.deleteAdmin);
+router.delete('/deleteAdmin/:adminId',authAdmin,adminController.deleteAdmin);
 
-router.get('/dashboard',adminController.dashBoard);
+router.get('/dashboard',authAdmin,adminController.dashBoard);
 
-router.get("/messages",adminController.getMsg);
+router.get("/messages",authAdmin,adminController.getMsg);
+
+router.post("/logout-admin",authAdmin,adminController.adminLogout);
+
+router.get("/me", authAdmin, (req, res) => {
+  res.status(200).json({
+    admin: {
+      id: req.admin._id,
+      role: req.admin.role,
+      name: req.admin.name,
+    },
+  });
+});
+
 
 module.exports = router;
